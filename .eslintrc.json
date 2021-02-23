@@ -1,0 +1,13 @@
+{
+  "env": {
+    "jquery": true
+  },
+  "overrides": [
+    {
+      "parser": "babel-eslint",
+      "files": ["src/**/*.js"],
+      "extends": ["prettier"],
+      "rules": {}
+    }
+  ]
+}

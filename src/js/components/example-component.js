@@ -1,0 +1,1 @@
+export const log = () => console.log("example-component called");

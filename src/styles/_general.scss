@@ -1,0 +1,22 @@
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 18px;
+  font-family: "Futura PT Book", sans-serif;
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+a {
+  display: inline-block;
+}

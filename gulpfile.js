@@ -1,88 +1,33 @@
-var gulp = require('gulp'),
-    sass = require('gulp-sass'),
-    browserSync = require('browser-sync'),
-    uglify = require('gulp-uglify'),
-    concat = require('gulp-concat'),
-    rename = require('gulp-rename'),
-    del = require('del'),
-    autoprefixer = require('gulp-autoprefixer');
+const gulp = require("gulp");
 
-gulp.task('clean', async function () {
-  del.sync('dist')
-});
+const { serve } = require("./gulp/tasks/serve");
+const pug2html = require("./gulp/tasks/pug2html");
+const styles = require("./gulp/tasks/styles");
+const scripts = require("./gulp/tasks/scripts");
+const fonts = require("./gulp/tasks/fonts");
+const imageMinify = require("./gulp/tasks/imageMinify");
+const clean = require("./gulp/tasks/clean");
+const svgSprite = require("./gulp/tasks/svgSprite");
+const watch = require("./gulp/tasks/watch");
 
-gulp.task('scss', function () {
-  return gulp.src('app/scss/**/*.scss')
-    .pipe(sass({ outputStyle: 'compressed' }))
-    .pipe(autoprefixer())
-    .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('app/css'))
-    .pipe(browserSync.reload({ stream: true }))
-});
+function setMode(isProduction = false) {
+  return (done) => {
+    process.env.NODE_ENV = isProduction ? "production" : "development";
+    if (done) done();
+  };
+}
 
-gulp.task('html', function () {
-  return gulp.src('app/*.html')
-    .pipe(browserSync.reload({ stream: true }))
-});
+const dev = gulp.parallel(
+    pug2html,
+    styles,
+    scripts,
+    fonts,
+    imageMinify,
+    svgSprite
+);
 
-gulp.task('script', function () {
-  return gulp.src('app/js/*.js')
-    .pipe(browserSync.reload({ stream: true }))
-});
+const build = gulp.series(clean, dev);
 
-gulp.task('js', function () {
-  return gulp.src([
-    'node_modules/slick-carousel/slick/slick.js',
-  ])
-    .pipe(concat('libs.min.js'))
-    .pipe(uglify())
-    .pipe(gulp.dest('app/js'))
-    .pipe(browserSync.reload({ stream: true }))
-});
-
-gulp.task('css', function () {
-  return gulp.src([
-    'node_modules/normalize.css/normalize.css',
-    'node_modules/slick-carousel/slick/slick.css',
-    // 'node_modules/animate.css/animate.css',
-  ])
-    .pipe(concat('_libs.scss'))
-    .pipe(gulp.dest('app/scss'))
-    .pipe(browserSync.reload({ stream: true }))
-});
-
-gulp.task('watch', function () {
-  gulp.watch('app/scss/**/*.scss', gulp.parallel('scss'))
-  gulp.watch('app/*.html', gulp.parallel('html'))
-  gulp.watch('app/js/*.js', gulp.parallel('script'))
-});
-
-gulp.task('browser-sync', function () {
-  browserSync.init({
-    server: {
-      baseDir: "app/"
-    },
-    notify: false
-  });
-});
-
-gulp.task('import', function () {
-  let buildHtml = gulp.src('app/**/*.html')
-    .pipe(gulp.dest('dist'))
-
-  let buildCss = gulp.src('app/css/**/*.css')
-    .pipe(gulp.dest('dist/css'))
-
-  let buildJs = gulp.src('app/js/**/*.js')
-    .pipe(gulp.dest('dist/js'))
-
-  let buildFonts = gulp.src('app/fonts/**/*.*')
-    .pipe(gulp.dest('dist/fonts'))
-
-  let buildImages = gulp.src('app/images/**/*.*')
-    .pipe(gulp.dest('dist/images'))
-});
-
-gulp.task('build', gulp.series('clean', 'import'));
-
-gulp.task('default', gulp.parallel('css', 'scss', 'js', 'browser-sync', 'watch'));
+module.exports.start = gulp.series(setMode(), build, serve, watch);
+module.exports.build = gulp.series(setMode(true), build);
+module.exports.clean = gulp.task(clean);
